@@ -18,6 +18,7 @@ int main()
 {
     int counter = 0;
     int S;
+    int freq_rate = 10;
     //mypin1.mode(PullDown);
     //mypin2.mode(PullDown);
     //mypin3.mode(PullDown);
@@ -27,29 +28,31 @@ int main()
     uLCD.text_height(2);
     uLCD.color(RED);
     
+
+
     while(!mypin3){
         uLCD.locate(1,2);
         //uLCD.printf("%2d",counter);
         if(mypin1 && counter < 10){           
             counter++;
-            freq = (counter+1)*10; 
+            freq = (counter+1)*freq_rate; 
             uLCD.printf("%3dHz",freq);
         }else if(mypin2 && counter > 0){            
             counter--;
-            freq = (counter+1)*10; 
+            freq = (counter+1)*freq_rate; 
             uLCD.printf("%3dHz",freq);
         }else {
-            freq = (counter+1)*10;
+            freq = (counter+1)*freq_rate;
             uLCD.printf("%3dHz",freq);
         }
         ThisThread::sleep_for(300ms);
     }
     uLCD.locate(1,2);
     uLCD.textbackground_color(BLACK);
-    freq = (counter+1)*10;
+    freq = (counter+1)*freq_rate;
     uLCD.printf("%3dHz",freq);
     
-    S = (1+0+8+0+6+0+0+0+6)%10; //1
+    //S = (1+0+8+0+6+0+0+0+6)%10; //1
     //printf("\n");
     t.start(gen_waveform);
 
@@ -57,7 +60,7 @@ int main()
     ThisThread::sleep_for(500ms);
     for (int i = 0; i < 500; i++) {
         data[i] = Ain;
-        ThisThread::sleep_for(2ms);
+        ThisThread::sleep_for(1ms);
     }
     for (int i = 0; i < 500; i++) {
         printf("%f\n", data[i]);
@@ -68,16 +71,18 @@ int main()
 void gen_waveform(void){
     // S = 1.
     uint16_t triwave = 0;
+    int up_twaste, down_twaste;
+    // 5000 == 10Hz;
+    up_twaste = (5000/freq)*1;
+    down_twaste = (5000/freq)*9;
     while(1){
-        for (int i = 0; i < 3; i++) {
-            triwave = (uint16_t)(65535 * 3/3.3 * i/3);
+        for (int i = 0; i < up_twaste; i++) {
+            triwave = (uint16_t)(65535 * 3/3.3 * i/up_twaste);
             aout.write_u16(triwave);
-            ThisThread::sleep_for(1000ms/30/freq);
         }
-        for (int i = 0; i < 27; i++) {
-            triwave = (uint16_t)(65535 * 3/3.3 - (65535 * 3/3.3 * i/27));
+        for (int i = 0; i < down_twaste; i++) {
+            triwave = (uint16_t)(65535 * 3/3.3 - (65535 * 3/3.3 * i/down_twaste));
             aout.write_u16(triwave);
-            ThisThread::sleep_for(1000ms/30/freq);
         }
     }
 }
